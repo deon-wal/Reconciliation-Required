@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RECONCILIATION REQUIRED — Relational Amortization Registry & World Atlas</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        basalt: {
+                            900: '#0a0c0e',
+                            800: '#121619',
+                            700: '#1b2024',
+                            600: '#283037',
+                        },
+                        teal: {
+                            muted: '#2c4a4e',
+                            glow: '#3d6b70',
+                            deep: '#132326',
+                        },
+                        ochre: {
+                            desert: '#c2925b',
+                            dim: '#8a653a',
+                            light: '#dfb27e',
+                        },
+                        chalk: '#e6e8e6',
+                        amber: {
+                            alert: '#d97706',
+                            emergency: '#b45309',
+                            pulse: '#f59e0b',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'Playfair Display', 'Georgia', 'serif'],
+                        sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom scrollbar & film grain overlay */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0c0e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #283037;
+            border-radius: 2px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c2925b;
+        }
+
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0, 0, 0, 0.15) 50%,
+                rgba(0, 0, 0, 0.15)
+            );
+            background-size: 100% 4px;
+            opacity: 0.4;
+        }
+
+        .cinematic-vignette {
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.85);
+        }
+
+        .glitch-hover:hover {
+            text-shadow: 1px 0 0 rgba(194,146,91,0.5), -1px 0 0 rgba(44,74,78,0.5);
+        }
+
+        /* Reading Prose Typography Enhancements */
+        .story-prose p {
+            margin-bottom: 1.75rem;
+            line-height: 1.9;
+            font-size: 1.05rem;
+            color: rgba(230, 232, 230, 0.88);
+            font-weight: 300;
+        }
+        .story-prose p:first-of-type::first-letter {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            float: left;
+            line-height: 0.8;
+            margin-right: 0.75rem;
+            color: #c2925b;
+        }
+        .story-prose strong {
+            color: #e6e8e6;
+            font-weight: 600;
+        }
+
+        /* Map styling effects */
+        .map-grid-bg {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        
+        .map-marker {
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        .map-marker:hover {
+            transform: scale(1.25);
+            filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.8));
+        }
+
+        .map-pulse {
+            animation: pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            50% { transform: scale(1.6); opacity: 0; }
+            100% { transform: scale(0.8); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-basalt-900 text-chalk font-sans antialiased selection:bg-ochre-desert selection:text-basalt-900 min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <div class="grain-overlay"></div>
+    <div class="scanline"></div>
+
+    <!-- Header / Navigation -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-basalt-900/80 backdrop-blur-md border-b border-basalt-700/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showSection('hero')">
+                <div class="w-3 h-3 bg-amber-alert animate-pulse rounded-full"></div>
+                <div class="flex flex-col">
+                    <span class="font-serif tracking-widest text-xs sm:text-sm font-semibold uppercase text-chalk">AMORTIZATION AUTHORITY</span>
+                    <span class="font-mono text-[9px] sm:text-[10px] text-ochre-desert/80 uppercase tracking-wider">SECTOR 04 // BUREAU OF BALANCE</span>
+                </div>
+            </div>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden lg:flex items-center space-x-6 text-xs font-mono tracking-widest uppercase">
+                <button onclick="showSection('hero')" class="nav-link text-chalk/70 hover:text-ochre-desert transition-colors py-2" id="nav-hero">ARCHIVE HERO</button>
+                <button onclick="showSection('story')" class="nav-link text-chalk/70 hover:text-ochre-desert transition-colors py-2" id="nav-story">STORY ARCHIVE</button>
+                <button onclick="showSection('characters')" class="nav-link text-chalk/70 hover:text-ochre-desert transition-colors py-2" id="nav-characters">CHARACTER DOSSIERS</button>
+                <button onclick="showSection('atlas')" class="nav-link text-chalk/70 hover:text-ochre-desert transition-colors py-2" id="nav-atlas">WORLD ATLAS</button>
+                <button onclick="showSection('dossier')" class="nav-link text-chalk/70 hover:text-ochre-desert transition-colors py-2" id="nav-dossier">DOSSIERS & LOGS</button>
+                <button onclick="showSection('calculator')" class="nav-link text-chalk/70 hover:text-ochre-desert transition-colors py-2" id="nav-calculator">DEBT AUDIT</button>
+                <button onclick="showSection('codex')" class="nav-link text-chalk/70 hover:text-ochre-desert transition-colors py-2" id="nav-codex">CODEX</button>
+            </nav>
+
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex flex-col text-right font-mono text-[10px] text-chalk/50">
+                    <span>SECTOR STATUS: <span class="text-teal-glow">STABLE</span></span>
+                    <span>PURGE CYCLE: <span class="text-amber-alert">14 DAYS</span></span>
+                </div>
+                <button id="mobile-menu-btn" class="lg:hidden text-chalk p-2 hover:text-ochre-desert" aria-label="Toggle menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-basalt-800/95 border-b border-basalt-700 px-6 py-6 space-y-3 font-mono text-xs uppercase tracking-widest">
+            <button onclick="showSection('hero'); toggleMobileMenu();" class="block w-full text-left py-2 border-b border-basalt-700 text-chalk">01 // Archive Hero</button>
+            <button onclick="showSection('story'); toggleMobileMenu();" class="block w-full text-left py-2 border-b border-basalt-700 text-chalk">02 // Story Archive</button>
+            <button onclick="showSection('characters'); toggleMobileMenu();" class="block w-full text-left py-2 border-b border-basalt-700 text-chalk">03 // Character Dossiers</button>
+            <button onclick="showSection('atlas'); toggleMobileMenu();" class="block w-full text-left py-2 border-b border-basalt-700 text-ochre-desert font-bold">04 // World Atlas (Cartography)</button>
+            <button onclick="showSection('dossier'); toggleMobileMenu();" class="block w-full text-left py-2 border-b border-basalt-700 text-chalk">05 // Dossiers & Logs</button>
+            <button onclick="showSection('calculator'); toggleMobileMenu();" class="block w-full text-left py-2 border-b border-basalt-700 text-chalk">06 // Debt Audit Calculator</button>
+            <button onclick="showSection('codex'); toggleMobileMenu();" class="block w-full text-left py-2 text-chalk">07 // Amortization Codex</button>
+        </div>
+    </header>
+
+    <main class="flex-grow pt-16 sm:pt-20">
+        
+        <!-- SECTION: HERO -->
+        <section id="section-hero" class="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between p-6 sm:p-12 lg:p-20 overflow-hidden cinematic-vignette">
+            <!-- Background Image with Dark Vignette Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop" alt="Brutalist concrete infrastructure overtaken by moss and volcanic mist" class="w-full h-full object-cover object-center opacity-35 scale-105 transition-transform duration-10000 ease-out hover:scale-100" />
+                <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-basalt-900/60 to-basalt-900/40"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-basalt-900/90 via-transparent to-basalt-900/90"></div>
+            </div>
+
+            <!-- Foreground Content -->
+            <div class="relative z-10 max-w-5xl my-auto space-y-6 pt-12">
+                <div class="inline-flex items-center space-x-3 bg-basalt-800/80 border border-basalt-600/60 px-3 py-1.5 rounded-sm">
+                    <span class="w-2 h-2 rounded-full bg-amber-alert animate-ping"></span>
+                    <span class="font-mono text-xs text-ochre-desert uppercase tracking-widest">CIVIC DISPATCH #409-B • STRICT CONFIDENTIALITY</span>
+                </div>
+
+                <h1 class="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight font-extrabold text-chalk leading-none uppercase">
+                    Reconciliation<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-ochre-desert via-ochre-light to-chalk">Required</span>
+                </h1>
+
+                <p class="font-sans text-base sm:text-lg md:text-xl text-chalk/80 max-w-2xl font-light leading-relaxed">
+                    In the island city of <span class="text-ochre-desert font-normal">Aethelgard</span>, emotional bonds are subject to state ledgering. Every intimacy creates an unpaid debt to the public framework. When debt balances exceed systemic tolerance, citizens undergo total Relational Amortization.
+                </p>
+
+                <div class="pt-6 flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    <button onclick="showSection('story')" class="group relative px-8 py-4 bg-ochre-desert text-basalt-900 font-mono text-xs font-bold uppercase tracking-widest hover:bg-ochre-light transition-all shadow-lg flex items-center justify-center space-x-3">
+                        <span>READ THE STORY ARCHIVE</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
+                    </button>
+                    
+                    <button onclick="showSection('atlas')" class="px-8 py-4 border border-basalt-600 bg-basalt-800/50 backdrop-blur-sm text-chalk font-mono text-xs uppercase tracking-widest hover:border-ochre-desert hover:text-ochre-desert transition-all text-center flex items-center justify-center space-x-2">
+                        <i data-lucide="map" class="w-4 h-4 text-ochre-desert"></i>
+                        <span>EXPLORE MUNICIPAL ATLAS</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer Ticker/Metadata -->
+            <div class="relative z-10 pt-12 border-t border-basalt-700/50 grid grid-cols-2 md:grid-cols-4 gap-6 font-mono text-xs text-chalk/50">
+                <div>
+                    <div class="text-[10px] uppercase text-ochre-desert/80">LOCATION</div>
+                    <div class="text-chalk font-semibold mt-0.5">Basalt Basin • Sector 04</div>
+                </div>
+                <div>
+                    <div class="text-[10px] uppercase text-ochre-desert/80">AMORTIZED TODAY</div>
+                    <div class="text-chalk font-semibold mt-0.5">142 Citizens</div>
+                </div>
+                <div>
+                    <div class="text-[10px] uppercase text-ochre-desert/80">MEMORY MONITORS</div>
+                    <div class="text-teal-glow font-semibold mt-0.5">ACTIVE &amp; SCANNING</div>
+                </div>
+                <div>
+                    <div class="text-[10px] uppercase text-ochre-desert/80">CIVIC LAW</div>
+                    <div class="text-chalk font-semibold mt-0.5">DECREE 88-E (REVISED)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: STORY ARCHIVE -->
+        <section id="section-story" class="hidden min-h-screen relative bg-basalt-900">
+            <!-- Persistent Act Progress Bar -->
+            <div class="sticky top-16 sm:top-20 z-40 bg-basalt-900/90 backdrop-blur-md border-b border-basalt-700/80 px-4 py-3">
+                <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 font-mono text-xs">
+                    <div class="flex items-center space-x-2 text-ochre-desert">
+                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                        <span class="uppercase tracking-widest font-semibold">STORY ARCHIVE</span>
+                    </div>
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <button onclick="scrollToAct('act-1')" id="act-btn-1" class="px-2.5 py-1 rounded bg-basalt-700 text-chalk hover:text-ochre-desert transition-colors">ACT I</button>
+                        <button onclick="scrollToAct('act-2')" id="act-btn-2" class="px-2.5 py-1 rounded bg-basalt-800 text-chalk/60 hover:text-ochre-desert transition-colors">ACT II</button>
+                        <button onclick="scrollToAct('act-3')" id="act-btn-3" class="px-2.5 py-1 rounded bg-basalt-800 text-chalk/60 hover:text-ochre-desert transition-colors">ACT III</button>
+                        <button onclick="scrollToAct('act-4')" id="act-btn-4" class="px-2.5 py-1 rounded bg-basalt-800 text-chalk/60 hover:text-ochre-desert transition-colors">ACT IV</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACT I -->
+            <article id="act-1" class="act-block border-b border-basalt-700/60 pb-20">
+                <div class="relative h-[65vh] w-full flex items-end p-6 sm:p-12 lg:p-20 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=2000&auto=format&fit=crop" alt="Brutalist basalt corridor reclaimed by tropical ferns and volcanic steam" class="absolute inset-0 w-full h-full object-cover opacity-40" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-basalt-900/50 to-transparent"></div>
+                    <div class="relative z-10 max-w-4xl space-y-3">
+                        <span class="font-mono text-xs uppercase tracking-widest text-ochre-desert">// ACT I</span>
+                        <h2 class="font-serif text-3xl sm:text-5xl lg:text-6xl text-chalk uppercase font-bold">FRONTIER EROSION</h2>
+                        <p class="font-mono text-xs text-chalk/60">SECTOR 04 // BASALT PERIMETER & LOGISTICS HUB</p>
+                    </div>
+                </div>
+
+                <div class="max-w-3xl mx-auto px-6 sm:px-8 pt-12 story-prose">
+                    <p>
+                        The volcanic rain in Sector 04 smelled faintly of copper and wet ash. Teo stood beneath the overhang of the transit gantry, tracing his thumb over a groove carved into the basalt column. Three years ago, he and Kian had gouged those twin initials into the stone with a discarded tungsten chisel. Today, the lines were shallow, smoothed down as if worn by decades of tide rather than thirty-six months of rain.
+                    </p>
+                    <p>
+                        He pulled out his field tablet, opening the perimeter log. The system registered no structural erosion on Column 14. Yet, when he pressed his palm flat against the stone, the notch felt almost entirely erased. It wasn't weathering. It was as if the stone itself was forgetting it had ever been marked.
+                    </p>
+
+                    <div class="my-8 p-4 sm:p-6 bg-black border border-amber-alert/40 rounded-sm font-mono text-xs space-y-2 text-amber-alert/90 shadow-xl">
+                        <div class="flex justify-between border-b border-amber-alert/20 pb-2">
+                            <span>[MUNICIPAL MONITOR FEED — WAREHOUSE 88]</span>
+                            <span class="animate-pulse">STREAM: ANOMALOUS</span>
+                        </div>
+                        <p class="text-chalk/80">
+                            &gt; LOG_ID: 884-DELTA<br>
+                            &gt; RECONCILIATION AUDIT IN PROGRESS<br>
+                            &gt; MATCHING ANTECEDENT RECORDS AGAINST CIVIC LEDGER 04...<br>
+                            &gt; DISCREPANCY DETECTED: 1 RECORD UNREFERENCED.
+                        </p>
+                    </div>
+
+                    <p>
+                        Across the basin in the central logistics stack, Nadia stared at a dual monitor configuration in Warehouse 88. Her job was straightforward: catalog decommissioned domestic artifacts prior to physical incineration. On screen left, a feed showed a crate of leather-bound sketchbooks transferred from a residential unit in Sector 01. On screen right, the public index declared the unit had been vacant for nine years, assigned only to single-occupant industrial mechanics.
+                    </p>
+                    <p>
+                        She zoomed in on a handwritten note tucked inside the front cover of a sketch pad: <em>"Don't let them tell you the mist is natural."</em> Nadia checked the registry ID attached to the crate. The file returned a string of zeros. The name had already been scrubbed, but the ink remained.
+                    </p>
+                    <p>
+                        Meanwhile, at the jungle perimeter where the basalt walls met the wild volcanic ridge, Priya walked the daily patrol line. Her thermal scanner hummed steadily, mapping dense tropical foliage against the perimeter grid. Halfway along fence line 12, her eyes caught a narrow path cutting straight through the ferns and banyan roots—a path clearly visible to the naked eye, yet completely absent from the LIDAR terrain map floating on her HUD.
+                    </p>
+                    <p>
+                        She stepped off the concrete apron onto the soft earth. The air grew immediately cooler, heavy with the scent of damp moss and ozone. The trail led directly toward a buried concrete archway half-swallowed by fig roots—an entrance that municipal records claimed was sealed during the original caldera stabilization forty years prior.
+                    </p>
+                </div>
+            </article>
+
+            <!-- ACT II -->
+            <article id="act-2" class="act-block border-b border-basalt-700/60 pb-20">
+                <div class="relative h-[65vh] w-full flex items-end p-6 sm:p-12 lg:p-20 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop" alt="High security municipal archive vault in Aethelgard" class="absolute inset-0 w-full h-full object-cover opacity-40" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-basalt-900/50 to-transparent"></div>
+                    <div class="relative z-10 max-w-4xl space-y-3">
+                        <span class="font-mono text-xs uppercase tracking-widest text-ochre-desert">// ACT II</span>
+                        <h2 class="font-serif text-3xl sm:text-5xl lg:text-6xl text-chalk uppercase font-bold">RECONCILIATION</h2>
+                        <p class="font-mono text-xs text-chalk/60">SECTOR 00 // BUREAU OF RELATIONAL BALANCE</p>
+                    </div>
+                </div>
+
+                <div class="max-w-3xl mx-auto px-6 sm:px-8 pt-12 story-prose">
+                    <p>
+                        Yara sat inside the air-conditioned silence of the Bureau of Relational Balance. As a Senior Assessor, her screens displayed real-time emotional expenditure indices across all nine sectors. The math was immutable: every deep personal relationship created an unquantified liability against public stability. When two citizens built a private world, they withdrew emotional capacity from the state.
+                    </p>
+                    <p>
+                        A priority alert flashed gold on her central console. An automated amortization order had been queued for Case #7709-M. She clicked through to review the subject profile before authorizing neural dampening.
+                    </p>
+
+                    <div class="my-8 p-4 sm:p-6 bg-black border border-ochre-desert/50 rounded-sm font-mono text-xs space-y-2 text-ochre-desert shadow-xl">
+                        <div class="flex justify-between border-b border-ochre-desert/20 pb-2">
+                            <span>[CIVIC AMORTIZATION DOSSIER #7709-M]</span>
+                            <span class="text-amber-alert font-bold">COUNTDOWN ACTIVE</span>
+                        </div>
+                        <p class="text-chalk/80">
+                            &gt; SUBJECT NAME: KIAN VANCE<br>
+                            &gt; ASSIGNED SISTER / CO-DEPENDENT: YARA VANCE<br>
+                            &gt; ACCUMULATED RELATIONAL DEBT: 48,200 CR<br>
+                            &gt; DISSOLUTION SCHEDULE: 02 HRS 14 MINS<br>
+                            &gt; ACTION: TOTAL NEURAL AMORTIZATION & REALLOCATION
+                        </p>
+                    </div>
+
+                    <p>
+                        Her breath hitched. Kian. Her brother's name wasn't supposed to appear in the high-deficit tier. They had taken every precaution—communicating only through brief, neutral municipal memos, keeping their living quarters separated by three transit sectors. But the system had detected an anomaly in their shared background data: a high-density memory node from their childhood in the volcanic rift settlements.
+                    </p>
+                    <p>
+                        Yara opened the secret Relational Amortization Protocol sub-layer—a restricted ledger known only to high-ranking assessors. The protocol didn't just dampen memories; it actively redistributed the subjects' shared history into the island's geothermal power grid, converting human attachment into raw civic energy.
+                    </p>
+                    <p>
+                        If the countdown reached zero, Kian would not only forget her—he would cease to exist in every civic database, his identity erased from birth registries, medical logs, and housing assignments.
+                    </p>
+                </div>
+            </article>
+
+            <!-- ACT III -->
+            <article id="act-3" class="act-block border-b border-basalt-700/60 pb-20">
+                <div class="relative h-[65vh] w-full flex items-end p-6 sm:p-12 lg:p-20 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?q=80&w=2000&auto=format&fit=crop" alt="Ancient underground subterranean basalt machinery and roots" class="absolute inset-0 w-full h-full object-cover opacity-40" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-basalt-900/50 to-transparent"></div>
+                    <div class="relative z-10 max-w-4xl space-y-3">
+                        <span class="font-mono text-xs uppercase tracking-widest text-ochre-desert">// ACT III</span>
+                        <h2 class="font-serif text-3xl sm:text-5xl lg:text-6xl text-chalk uppercase font-bold">CONVERGENCE</h2>
+                        <p class="font-mono text-xs text-chalk/60">SUB-BASALT WELLS // ARCHIVAL MACHINERY</p>
+                    </div>
+                </div>
+
+                <div class="max-w-3xl mx-auto px-6 sm:px-8 pt-12 story-prose">
+                    <p>
+                        The sound of running water guided them deeper into the sub-basalt conduit. Nadia held her industrial lantern low, casting long shadows across massive bronze conduit pipes that ran parallel to the stone walls. Beside her, Teo checked the signal tracer he had adapted from a transit diagnostic unit.
+                    </p>
+                    <p>
+                        "The pipes aren't carrying thermal fluid," Nadia whispered, pointing to the frosted condensation along the heavy brass couplings. "It's liquid nitrogen. They're cooling something underneath the main reactor floor."
+                    </p>
+                    <p>
+                        Priya joined them at the junction, her military patrol gear coated in red volcanic mud. "The path outside leads directly down here," she said, shining her beam onto an ancient iron doorway set into the natural volcanic rock.
+                    </p>
+
+                    <div class="my-8 p-4 sm:p-6 bg-black border border-teal-glow/50 rounded-sm font-mono text-xs space-y-2 text-teal-glow shadow-xl">
+                        <div class="flex justify-between border-b border-teal-glow/20 pb-2">
+                            <span>[SUB-SILT SUBGRADE CHAMBER 00]</span>
+                            <span>NODE STATUS: ACTIVE</span>
+                        </div>
+                        <p class="text-chalk/80">
+                            &gt; PRIMARY RECEPTACLE: MEMORY COILS (4,000 TB CAPACITY)<br>
+                            &gt; SYSTEM CORE: LIQUID NITROGEN COOLED AMORTIZATION WELL<br>
+                            &gt; INCOMING DATA STREAM: SECTOR 04 RELATIONAL PURGE<br>
+                            &gt; WARNING: UNAUTHORIZED PHYSICAL PRESENCE DETECTED.
+                        </p>
+                    </div>
+
+                    <p>
+                        They stepped through the portal into a colossal cavern illuminated by low-frequency teal indicator lights. Thousands of magnetic memory tiles hung from suspended circular racks, revolving slowly in vertical silos that extended down into the island's subterranean roots.
+                    </p>
+                </div>
+            </article>
+
+            <!-- ACT IV -->
+            <article id="act-4" class="act-block pb-20">
+                <div class="relative h-[65vh] w-full flex items-end p-6 sm:p-12 lg:p-20 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=2000&auto=format&fit=crop" alt="Volcanic horizon over Aethelgard at twilight" class="absolute inset-0 w-full h-full object-cover opacity-40" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-basalt-900/50 to-transparent"></div>
+                    <div class="relative z-10 max-w-4xl space-y-3">
+                        <span class="font-mono text-xs uppercase tracking-widest text-ochre-desert">// ACT IV</span>
+                        <h2 class="font-serif text-3xl sm:text-5xl lg:text-6xl text-chalk uppercase font-bold">SEVERANCE</h2>
+                        <p class="font-mono text-xs text-chalk/60">SECTOR 00 // BUREAU CONTROL CORE</p>
+                    </div>
+                </div>
+
+                <div class="max-w-3xl mx-auto px-6 sm:px-8 pt-12 story-prose">
+                    <p>
+                        Yara stood before the primary override panel in the central terminal room. On her screen, the countdown for Case #7709-M reached 00:04:12. Her hand rested over the manual purge switch—the button that would sever Kian's record permanently to protect the bureau's secrecy.
+                    </p>
+                    <p>
+                        A secondary window opened. It was a live comms relay from Warehouse 88. Nadia was on screen, looking directly into the vault camera. Behind Nadia, Teo and Priya were attempting to bypass the sub-silt vault lock.
+                    </p>
+
+                    <div class="my-8 p-4 sm:p-6 bg-black border border-amber-alert/60 rounded-sm font-mono text-xs space-y-3 text-chalk shadow-2xl">
+                        <div class="flex justify-between border-b border-amber-alert/30 pb-2 text-amber-alert font-bold">
+                            <span>[CRITICAL CHOICE DETECTED]</span>
+                            <span>TIME REMAINING: 01:15</span>
+                        </div>
+                        <p class="text-chalk/80 leading-relaxed">
+                            OPTION A: EXECUTE PURGE #7709-M — Preserve state ledger integrity. Erase Kian Vance.<br>
+                            OPTION B: INITIATE CORE OVERLOAD — Release all stored memory coils into the public grid. Expose Relational Amortization. Risk total civic collapse.
+                        </p>
+                    </div>
+
+                    <p>
+                        Yara slowly reached forward, her fingers hovering between the two command keys. Outside the reinforced windows of Sector 00, the volcanic mist settled over Aethelgard's concrete towers.
+                    </p>
+                </div>
+            </article>
+
+            <div class="max-w-4xl mx-auto px-6 pb-20 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-basalt-700 font-mono text-xs">
+                <button onclick="showSection('hero')" class="px-6 py-3 border border-basalt-700 bg-basalt-800 text-chalk hover:text-ochre-desert transition-all">
+                    ← RETURN TO ARCHIVE HERO
+                </button>
+                <button onclick="showSection('characters')" class="px-6 py-3 bg-ochre-desert text-basalt-900 font-bold hover:bg-ochre-light transition-all">
+                    INSPECT CHARACTER DOSSIERS →
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION: CHARACTER ARCHIVE -->
+        <section id="section-characters" class="hidden min-h-screen p-6 sm:p-12 lg:p-16 max-w-7xl mx-auto space-y-12">
+            <div class="border-b border-basalt-700 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <span class="font-mono text-xs text-ochre-desert tracking-widest uppercase">// PERSONNEL ARCHIVE & BIOMETRIC PROFILES</span>
+                    <h2 class="font-serif text-3xl sm:text-5xl text-chalk uppercase mt-1">Key Personnel Dossiers</h2>
+                    <p class="font-sans text-sm text-chalk/70 mt-2 max-w-2xl">
+                        Biometric registries, relational impact vectors, and classified observation logs for subjects central to the Sector 04 Amortization Anomaly.
+                    </p>
+                </div>
+                <div class="font-mono text-xs text-chalk/60 bg-basalt-800 p-3 rounded border border-basalt-700">
+                    REGISTRY INDEX: <span class="text-teal-glow font-bold">5 ACTIVE SUBJECTS</span>
+                </div>
+            </div>
+
+            <!-- Character Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Character 1: Yara Voss -->
+                <div class="bg-basalt-800/80 border border-basalt-700 hover:border-ochre-desert/80 transition-all group flex flex-col justify-between rounded-sm overflow-hidden">
+                    <div>
+                        <div class="relative h-72 w-full overflow-hidden bg-basalt-900">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop" alt="Yara Voss" class="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-transparent to-transparent"></div>
+                            <span class="absolute top-3 left-3 bg-basalt-900/80 border border-basalt-700 font-mono text-[10px] text-ochre-desert px-2 py-0.5 uppercase tracking-widest">ASSESSOR // SECTOR 00</span>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <div class="flex justify-between items-baseline font-mono text-xs text-chalk/50">
+                                <span>ID: #7709-A</span>
+                                <span class="text-amber-alert">HIGH CONFLICT</span>
+                            </div>
+                            <h3 class="font-serif text-2xl text-chalk group-hover:text-ochre-desert transition-colors">Yara Voss</h3>
+                            <p class="font-sans text-xs text-chalk/70 leading-relaxed">
+                                Senior Assessor in the Bureau of Relational Balance. Practical, disciplined, and bound by duty—until her brother Kian is queued for memory erasure.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="border-t border-basalt-700/60 pt-3 font-mono text-[11px] text-chalk/60 space-y-1">
+                            <div class="flex justify-between"><span>PRIMARY RELATION:</span> <span class="text-chalk">Kian Voss (Brother)</span></div>
+                            <div class="flex justify-between"><span>KEY MOTIVATION:</span> <span class="text-ochre-desert">Family Loyalty vs. Duty</span></div>
+                        </div>
+                        <button onclick="openCharacterModal('yara')" class="w-full py-2.5 bg-basalt-700/60 hover:bg-ochre-desert hover:text-basalt-900 border border-basalt-600 text-chalk font-mono text-xs uppercase tracking-widest transition-all font-semibold">
+                            INSPECT FULL DOSSIER
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Character 2: Kian Voss -->
+                <div class="bg-basalt-800/80 border border-basalt-700 hover:border-amber-alert/80 transition-all group flex flex-col justify-between rounded-sm overflow-hidden">
+                    <div>
+                        <div class="relative h-72 w-full overflow-hidden bg-basalt-900">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" alt="Kian Voss" class="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-transparent to-transparent"></div>
+                            <span class="absolute top-3 left-3 bg-basalt-900/80 border border-basalt-700 font-mono text-[10px] text-amber-alert px-2 py-0.5 uppercase tracking-widest">SCHEDULED FOR ERASURE</span>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <div class="flex justify-between items-baseline font-mono text-xs text-chalk/50">
+                                <span>ID: #7709-M</span>
+                                <span class="text-amber-alert">COUNTDOWN ACTIVE</span>
+                            </div>
+                            <h3 class="font-serif text-2xl text-chalk group-hover:text-amber-alert transition-colors">Kian Voss</h3>
+                            <p class="font-sans text-xs text-chalk/70 leading-relaxed">
+                                Yara’s warm brother. As his Relational Amortization countdown ticks down, his personality shifts into unsettling, polite unfamiliarity.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="border-t border-basalt-700/60 pt-3 font-mono text-[11px] text-chalk/60 space-y-1">
+                            <div class="flex justify-between"><span>PRIMARY RELATION:</span> <span class="text-chalk">Yara Voss (Sister)</span></div>
+                            <div class="flex justify-between"><span>SIGNATURE OBJECT:</span> <span class="text-ochre-desert">Carved Key</span></div>
+                        </div>
+                        <button onclick="openCharacterModal('kian')" class="w-full py-2.5 bg-basalt-700/60 hover:bg-amber-alert hover:text-basalt-900 border border-basalt-600 text-chalk font-mono text-xs uppercase tracking-widest transition-all font-semibold">
+                            INSPECT FULL DOSSIER
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Character 3: Nadia Solari -->
+                <div class="bg-basalt-800/80 border border-basalt-700 hover:border-teal-glow/80 transition-all group flex flex-col justify-between rounded-sm overflow-hidden">
+                    <div>
+                        <div class="relative h-72 w-full overflow-hidden bg-basalt-900">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop" alt="Nadia Solari" class="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-transparent to-transparent"></div>
+                            <span class="absolute top-3 left-3 bg-basalt-900/80 border border-basalt-700 font-mono text-[10px] text-teal-glow px-2 py-0.5 uppercase tracking-widest">LOGISTICS // WAREHOUSE 88</span>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <div class="flex justify-between items-baseline font-mono text-xs text-chalk/50">
+                                <span>ID: #8840-N</span>
+                                <span class="text-teal-glow">UNSANCTIONED ACCESS</span>
+                            </div>
+                            <h3 class="font-serif text-2xl text-chalk group-hover:text-teal-glow transition-colors">Nadia Solari</h3>
+                            <p class="font-sans text-xs text-chalk/70 leading-relaxed">
+                                Daring urban investigator posing as a municipal catalog clerk. Her relentless curiosity uncovers the dark truth beneath Warehouse 88.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="border-t border-basalt-700/60 pt-3 font-mono text-[11px] text-chalk/60 space-y-1">
+                            <div class="flex justify-between"><span>PRIMARY RELATION:</span> <span class="text-chalk">Yara Voss / Teo Rios</span></div>
+                            <div class="flex justify-between"><span>KEY MOTIVATION:</span> <span class="text-ochre-desert">Uncovering Civic Lies</span></div>
+                        </div>
+                        <button onclick="openCharacterModal('nadia')" class="w-full py-2.5 bg-basalt-700/60 hover:bg-teal-glow hover:text-basalt-900 border border-basalt-600 text-chalk font-mono text-xs uppercase tracking-widest transition-all font-semibold">
+                            INSPECT FULL DOSSIER
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Character 4: Teo Rios -->
+                <div class="bg-basalt-800/80 border border-basalt-700 hover:border-ochre-desert/80 transition-all group flex flex-col justify-between rounded-sm overflow-hidden">
+                    <div>
+                        <div class="relative h-72 w-full overflow-hidden bg-basalt-900">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop" alt="Teo Rios" class="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-transparent to-transparent"></div>
+                            <span class="absolute top-3 left-3 bg-basalt-900/80 border border-basalt-700 font-mono text-[10px] text-ochre-desert px-2 py-0.5 uppercase tracking-widest">MAINTENANCE // SECTOR 04</span>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <div class="flex justify-between items-baseline font-mono text-xs text-chalk/50">
+                                <span>ID: #4019-T</span>
+                                <span class="text-chalk/60">OBSERVED ANOMALY</span>
+                            </div>
+                            <h3 class="font-serif text-2xl text-chalk group-hover:text-ochre-desert transition-colors">Teo Rios</h3>
+                            <p class="font-sans text-xs text-chalk/70 leading-relaxed">
+                                Weathered municipal maintenance worker who quietly preserves fading traces of erased memories across basalt gantry walls.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="border-t border-basalt-700/60 pt-3 font-mono text-[11px] text-chalk/60 space-y-1">
+                            <div class="flex justify-between"><span>PRIMARY RELATION:</span> <span class="text-chalk">Kian Vance (Formerly)</span></div>
+                            <div class="flex justify-between"><span>SIGNATURE OBJECT:</span> <span class="text-ochre-desert">Tungsten Chisel</span></div>
+                        </div>
+                        <button onclick="openCharacterModal('teo')" class="w-full py-2.5 bg-basalt-700/60 hover:bg-ochre-desert hover:text-basalt-900 border border-basalt-600 text-chalk font-mono text-xs uppercase tracking-widest transition-all font-semibold">
+                            INSPECT FULL DOSSIER
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Character 5: Priya Nair -->
+                <div class="bg-basalt-800/80 border border-basalt-700 hover:border-teal-glow/80 transition-all group flex flex-col justify-between rounded-sm overflow-hidden">
+                    <div>
+                        <div class="relative h-72 w-full overflow-hidden bg-basalt-900">
+                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop" alt="Priya Nair" class="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-basalt-900 via-transparent to-transparent"></div>
+                            <span class="absolute top-3 left-3 bg-basalt-900/80 border border-basalt-700 font-mono text-[10px] text-teal-glow px-2 py-0.5 uppercase tracking-widest">SURVEILLANCE // PERIMETER 12</span>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <div class="flex justify-between items-baseline font-mono text-xs text-chalk/50">
+                                <span>ID: #1209-P</span>
+                                <span class="text-teal-glow">FIELD PATROL</span>
+                            </div>
+                            <h3 class="font-serif text-2xl text-chalk group-hover:text-teal-glow transition-colors">Priya Nair</h3>
+                            <p class="font-sans text-xs text-chalk/70 leading-relaxed">
+                                Calm, restrained perimeter operator. She detects physical paths swallowed by jungle that defy municipal LIDAR maps.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0 space-y-4">
+                        <div class="border-t border-basalt-700/60 pt-3 font-mono text-[11px] text-chalk/60 space-y-1">
+                            <div class="flex justify-between"><span>PRIMARY RELATION:</span> <span class="text-chalk">Teo Rios / Nadia Solari</span></div>
+                            <div class="flex justify-between"><span>KEY TOOL:</span> <span class="text-ochre-desert">Thermal Terrain HUD</span></div>
+                        </div>
+                        <button onclick="openCharacterModal('priya')" class="w-full py-2.5 bg-basalt-700/60 hover:bg-teal-glow hover:text-basalt-900 border border-basalt-600 text-chalk font-mono text-xs uppercase tracking-widest transition-all font-semibold">
+                            INSPECT FULL DOSSIER
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Character Profile Modal -->
+        <div id="character-modal" class="fixed inset-0 z-50 hidden bg-basalt-900/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div class="bg-basalt-800 border border-basalt-600 max-w-3xl w-full my-auto rounded-sm overflow-hidden shadow-2xl relative">
+                <button onclick="closeCharacterModal()" class="absolute top-4 right-4 text-chalk/60 hover:text-ochre-desert z-20">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                <div id="character-modal-content" class="p-6 sm:p-10 space-y-6">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: WORLD ATLAS (CARTOGRAPHY) -->
+        <section id="section-atlas" class="hidden min-h-screen p-4 sm:p-8 lg:p-12 max-w-7xl mx-auto space-y-8">
+            <!-- Section Header -->
+            <div class="border-b border-basalt-700 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <span class="font-mono text-xs text-ochre-desert tracking-widest uppercase">// MUNICIPAL CARTOGRAPHIC ARCHIVE • AETHELGARD SURVEY</span>
+                    <h2 class="font-serif text-3xl sm:text-5xl text-chalk uppercase mt-1">Interactive World Atlas</h2>
+                    <p class="font-sans text-sm text-chalk/70 mt-2 max-w-2xl">
+                        Official vector planning documents and subterranean cross-sections. Inspect municipal infrastructure, restricted sectors, and physical anomalies uncovered during perimeter patrols.
+                    </p>
+                </div>
+                <div class="flex items-center space-x-3 bg-basalt-800 p-3 rounded border border-basalt-700 font-mono text-xs">
+                    <span class="text-chalk/60">LAYER OVERLAY:</span>
+                    <button id="btn-layer-surface" onclick="toggleMapLayer('surface')" class="px-2.5 py-1 rounded bg-ochre-desert text-basalt-900 font-bold uppercase transition-all">SURFACE</button>
+                    <button id="btn-layer-undercity" onclick="toggleMapLayer('undercity')" class="px-2.5 py-1 rounded bg-basalt-700 text-chalk hover:text-ochre-desert uppercase transition-all">UNDERCITY</button>
+                </div>
+            </div>
+
+            <!-- Atlas Viewport Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- Map Selector Nav Sidebar -->
+                <div class="lg:col-span-1 bg-basalt-800/80 border border-basalt-700 p-4 space-y-3 rounded-sm">
+                    <div class="font-mono text-[11px] text-ochre-desert uppercase tracking-widest border-b border-basalt-700 pb-2 flex items-center justify-between">
+                        <span>SELECTABLE MAPS (8)</span>
+                        <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                    </div>
+
+                    <div class="space-y-1.5 font-mono text-xs" id="map-nav-container">
+                        <!-- Navigation Items injected via JS -->
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-basalt-700 text-[11px] font-mono text-chalk/50 space-y-2">
+                        <div class="flex items-center space-x-2 text-amber-alert">
+                            <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
+                            <span>LIDAR DISCREPANCY LOGGED</span>
+                        </div>
+                        <p class="text-[10px] leading-relaxed text-chalk/40">
+                            Geospatial discrepancies detected between Surface Municipal Surveys and Subgrade Nitrogen Piping Wells.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Main Display Canvas / Viewport Area -->
+                <div class="lg:col-span-3 bg-basalt-900 border border-basalt-700 rounded-sm overflow-hidden flex flex-col justify-between relative map-grid-bg min-h-[550px] sm:min-h-[650px] shadow-2xl">
+                    
+                    <!-- Top Map Title & Status Banner -->
+                    <div class="bg-basalt-800/90 border-b border-basalt-700 p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2 z-20 backdrop-blur-md">
+                        <div>
+                            <span class="font-mono text-[10px] text-ochre-desert uppercase tracking-widest" id="map-code-display">MAP REF: AETH-01-FULL</span>
+                            <h3 class="font-serif text-xl text-chalk uppercase font-bold" id="map-title-display">1. Full Island Cartography — Aethelgard</h3>
+                        </div>
+                        <div class="flex items-center space-x-3 font-mono text-xs">
+                            <span class="text-chalk/50">COORDINATES: <span class="text-chalk" id="map-coords">34°12'N 118°04'W</span></span>
+                            <button onclick="resetMapZoom()" class="p-1.5 bg-basalt-700 hover:bg-ochre-desert hover:text-basalt-900 rounded text-chalk transition-all" title="Reset View">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SVG Map Display Container -->
+                    <div id="svg-map-viewport" class="relative flex-grow flex items-center justify-center p-4 sm:p-8 overflow-hidden select-none">
+                        <!-- SVG Cartography dynamically loaded via JS -->
+                    </div>
+
+                    <!-- Bottom Inspector Panel -->
+                    <div id="map-inspector" class="bg-basalt-800/95 border-t border-basalt-700 p-4 sm:p-5 z-20 backdrop-blur-md space-y-2">
+                        <div class="flex justify-between items-center font-mono text-xs text-ochre-desert">
+                            <span class="flex items-center space-x-2">
+                                <i data-lucide="crosshair" class="w-3.5 h-3.5 text-amber-alert"></i>
+                                <span class="font-bold uppercase" id="inspector-name">CLICK A MAP MARKER TO AUDIT LOCATION</span>
+                            </span>
+                            <span class="text-[10px] text-chalk/40" id="inspector-sector">CIVIC SECTOR: UNBOUND</span>
+                        </div>
+                        <p class="font-sans text-xs text-chalk/80 leading-relaxed" id="inspector-desc">
+                            Select any yellow or teal beacon on the municipal blueprint to reveal classified civil planning notes, environmental anomalies, or narrative links.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION: DOSSIERS & LOGS -->
+        <section id="section-dossier" class="hidden min-h-screen p-6 sm:p-12 lg:p-16 max-w-7xl mx-auto space-y-12">
+            <div class="border-b border-basalt-700 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <span class="font-mono text-xs text-amber-alert tracking-widest uppercase">// RESTRICTED ACCESS • BUREAU ARCHIVES</span>
+                    <h2 class="font-serif text-3xl sm:text-5xl text-chalk uppercase mt-1">Dossiers &amp; Incident Logs</h2>
+                    <p class="font-sans text-sm text-chalk/70 mt-2 max-w-2xl">
+                        Official records of amortized individuals, flagged anomalies, and decommissioned municipal assets.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Interactive Dossier Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Nav List of Cases -->
+                <div class="space-y-4">
+                    <h3 class="font-mono text-xs uppercase tracking-widest text-chalk/50 px-1">SELECT DEBTOR FILE</h3>
+                    <div class="space-y-2" id="dossier-list">
+                        <!-- Case Item 1 -->
+                        <div onclick="loadCase(1)" id="case-btn-1" class="case-card p-4 bg-basalt-800 border border-ochre-desert/80 cursor-pointer hover:border-ochre-desert transition-all rounded-sm">
+                            <div class="flex justify-between items-start font-mono text-xs">
+                                <span class="text-ochre-desert font-bold">CASE #7709-M</span>
+                                <span class="text-amber-alert">ERASED</span>
+                            </div>
+                            <h4 class="font-serif text-lg text-chalk mt-1">Elias &amp; Mara Vance</h4>
+                            <p class="font-sans text-xs text-chalk/60 mt-1 line-clamp-2">Unsanctioned shared nostalgic attachment resulting in acute municipal imbalance.</p>
+                        </div>
+
+                        <!-- Case Item 2 -->
+                        <div onclick="loadCase(2)" id="case-btn-2" class="case-card p-4 bg-basalt-800/40 border border-basalt-700 cursor-pointer hover:border-ochre-desert transition-all rounded-sm">
+                            <div class="flex justify-between items-start font-mono text-xs">
+                                <span class="text-chalk/60 font-bold">CASE #8812-K</span>
+                                <span class="text-teal-glow">IN AMORTIZATION</span>
+                            </div>
+                            <h4 class="font-serif text-lg text-chalk mt-1">Dr. Aris Thorne</h4>
+                            <p class="font-sans text-xs text-chalk/60 mt-1 line-clamp-2">Chief Memory Technician accused of storing contraband emotional artifacts in basalt archives.</p>
+                        </div>
+
+                        <!-- Case Item 3 -->
+                        <div onclick="loadCase(3)" id="case-btn-3" class="case-card p-4 bg-basalt-800/40 border border-basalt-700 cursor-pointer hover:border-ochre-desert transition-all rounded-sm">
+                            <div class="flex justify-between items-start font-mono text-xs">
+                                <span class="text-chalk/60 font-bold">CASE #9104-L</span>
+                                <span class="text-chalk/40">PENDING AUDIT</span>
+                            </div>
+                            <h4 class="font-serif text-lg text-chalk mt-1">Subject 0-Zero (Unknown)</h4>
+                            <p class="font-sans text-xs text-chalk/60 mt-1 line-clamp-2">Unidentified citizen residing in the volcanic ruins outside Sector 00. Displays zero relational footprint.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Detail View -->
+                <div class="lg:col-span-2 bg-basalt-800 border border-basalt-700 p-6 sm:p-8 rounded-sm space-y-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-basalt-700 text-chalk/40 font-mono text-[10px] px-3 py-1 uppercase tracking-widest">
+                        DOCUMENT ID: RECON-2026-X
+                    </div>
+
+                    <div id="case-detail-content" class="space-y-6">
+                        <!-- Content dynamically loaded via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: DEBT AUDIT CALCULATOR -->
+        <section id="section-calculator" class="hidden min-h-screen p-6 sm:p-12 lg:p-16 max-w-5xl mx-auto space-y-10">
+            <div class="border-b border-basalt-700 pb-6">
+                <span class="font-mono text-xs text-amber-alert tracking-widest uppercase">// CIVIC ASSESSOR TERMINAL</span>
+                <h2 class="font-serif text-3xl sm:text-5xl text-chalk uppercase mt-1">Relational Debt Audit</h2>
+                <p class="font-sans text-sm text-chalk/70 mt-2 max-w-2xl">
+                    Calculate your personal Relational Debt Index. Every shared memory, unquantified affection, and unspoken vow burdens the civic network.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-basalt-800 border border-basalt-700 p-6 sm:p-8 rounded-sm">
+                <!-- Input Controls -->
+                <div class="space-y-6">
+                    <h3 class="font-mono text-xs uppercase tracking-widest text-ochre-desert border-b border-basalt-700 pb-2">INPUT PARAMETERS</h3>
+                    
+                    <!-- Slider 1 -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between font-mono text-xs">
+                            <label for="slider-years" class="text-chalk/80">Years of Intimate Connection</label>
+                            <span id="val-years" class="text-ochre-desert font-bold">5 Years</span>
+                        </div>
+                        <input type="range" id="slider-years" min="1" max="40" value="5" class="w-full accent-ochre-desert bg-basalt-900 h-2 rounded cursor-pointer" oninput="calculateDebt()">
+                    </div>
+
+                    <!-- Slider 2 -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between font-mono text-xs">
+                            <label for="slider-artifacts" class="text-chalk/80">Kept Artifacts (Letters, Photos, Gifts)</label>
+                            <span id="val-artifacts" class="text-ochre-desert font-bold">12 Items</span>
+                        </div>
+                        <input type="range" id="slider-artifacts" min="0" max="100" value="12" class="w-full accent-ochre-desert bg-basalt-900 h-2 rounded cursor-pointer" oninput="calculateDebt()">
+                    </div>
+
+                    <!-- Slider 3 -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between font-mono text-xs">
+                            <label for="slider-intensity" class="text-chalk/80">Emotional Mutual Reliance Level</label>
+                            <span id="val-intensity" class="text-ochre-desert font-bold">65%</span>
+                        </div>
+                        <input type="range" id="slider-intensity" min="0" max="100" value="65" class="w-full accent-ochre-desert bg-basalt-900 h-2 rounded cursor-pointer" oninput="calculateDebt()">
+                    </div>
+
+                    <!-- Checkboxes -->
+                    <div class="space-y-3 pt-2">
+                        <label class="flex items-center space-x-3 text-xs font-mono text-chalk/80 cursor-pointer">
+                            <input type="checkbox" id="chk-unspoken" class="accent-ochre-desert w-4 h-4" onchange="calculateDebt()">
+                            <span>Contains unexpressed grief / unresolved conflicts (+15%)</span>
+                        </label>
+                        <label class="flex items-center space-x-3 text-xs font-mono text-chalk/80 cursor-pointer">
+                            <input type="checkbox" id="chk-cohabitation" class="accent-ochre-desert w-4 h-4" onchange="calculateDebt()">
+                            <span>Shared domestic space / cohabitation history (+25%)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Debt Results Panel -->
+                <div class="bg-basalt-900 p-6 rounded border border-basalt-700 flex flex-col justify-between space-y-6">
+                    <div>
+                        <span class="font-mono text-[10px] uppercase text-chalk/50">CALCULATED CIVIC OBLIGATION</span>
+                        <div class="mt-2 text-4xl sm:text-5xl font-serif text-ochre-desert font-bold tracking-tight" id="debt-score">
+                            24,850 CR
+                        </div>
+                        <div class="mt-2 font-mono text-xs" id="debt-status">
+                            STATUS: <span class="text-amber-alert font-bold">MODERATE IMPAIRMENT</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 border-t border-basalt-800 pt-4 font-mono text-xs text-chalk/70">
+                        <div class="flex justify-between">
+                            <span>Amortization Period:</span>
+                            <span class="text-chalk" id="debt-period">18 Months</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Sanction Risk:</span>
+                            <span class="text-amber-alert" id="debt-risk">ELEVATED</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Prescribed Action:</span>
+                            <span class="text-teal-glow font-bold" id="debt-action">MANDATORY SEPARATION</span>
+                        </div>
+                    </div>
+
+                    <button onclick="triggerPurgeModal()" class="w-full py-3 bg-amber-alert/20 border border-amber-alert text-amber-alert font-mono text-xs uppercase tracking-widest hover:bg-amber-alert hover:text-basalt-900 transition-all font-bold">
+                        INITIATE VOLUNTARY DISSOLUTION
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: CODEX -->
+        <section id="section-codex" class="hidden min-h-screen p-6 sm:p-12 lg:p-16 max-w-6xl mx-auto space-y-12">
+            <div class="border-b border-basalt-700 pb-6">
+                <span class="font-mono text-xs text-ochre-desert tracking-widest uppercase">// SYSTEM LAWS &amp; PHILOSOPHY</span>
+                <h2 class="font-serif text-3xl sm:text-5xl text-chalk uppercase mt-1">The Amortization Codex</h2>
+            </div>
+
+            <!-- Accordion / Lore Articles -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-basalt-800/60 border border-basalt-700 p-6 rounded-sm space-y-3">
+                    <div class="font-mono text-xs text-ochre-desert">DECREE 12.1 // THE CONSERVATION OF EMPATHY</div>
+                    <h3 class="font-serif text-xl text-chalk">The Civic Zero-Sum Assumption</h3>
+                    <p class="font-sans text-sm text-chalk/70 leading-relaxed">
+                        Empathy is not an infinite renewable resource. When two citizens pool disproportionate emotional energy into a private dynamic, the surrounding civic infrastructure experiences a measurable drop in social cohesion. Amortization restores this equity by force.
+                    </p>
+                </div>
+
+                <div class="bg-basalt-800/60 border border-basalt-700 p-6 rounded-sm space-y-3">
+                    <div class="font-mono text-xs text-ochre-desert">TECHNOLOGY // THE BASALT SILO REGISTRY</div>
+                    <h3 class="font-serif text-xl text-chalk">Sub-Silt Memory Scrubbing</h3>
+                    <p class="font-sans text-sm text-chalk/70 leading-relaxed">
+                        Deep beneath the volcanic island’s basalt crust lie liquid nitrogen cooling wells containing thousands of magnetic memory tiles. As relationships are amortized, neural pathways associated with shared specific events are dampened through low-frequency ultrasound waves.
+                    </p>
+                </div>
+
+                <div class="bg-basalt-800/60 border border-basalt-700 p-6 rounded-sm space-y-3">
+                    <div class="font-mono text-xs text-ochre-desert">ARCHITECTURE // RECLAIMED URBANISM</div>
+                    <h3 class="font-serif text-xl text-chalk">Jungle-Monolithic Integration</h3>
+                    <p class="font-sans text-sm text-chalk/70 leading-relaxed">
+                        Brutalist municipal blocks are designed to let tropical ivy and volcanic moss overtake abandoned residential chambers. Once a domestic bond is amortized, the housing unit is allowed to decay naturally back into the jungle floor.
+                    </p>
+                </div>
+
+                <div class="bg-basalt-800/60 border border-basalt-700 p-6 rounded-sm space-y-3">
+                    <div class="font-mono text-xs text-ochre-desert">CIVIC CONSEQUENCE // THE ERASED</div>
+                    <h3 class="font-serif text-xl text-chalk">Ghost Ledgering</h3>
+                    <p class="font-sans text-sm text-chalk/70 leading-relaxed">
+                        To be amortized is not necessarily to die, but to become non-referential. You retain your ability to work, eat, and sleep, but no living citizen can register your name or recall your shared lineage without incurring severe ledger penalties.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Purge Action Modal -->
+    <div id="purge-modal" class="fixed inset-0 z-50 hidden bg-basalt-900/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-basalt-800 border border-amber-alert max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <div class="flex items-center space-x-3 text-amber-alert font-mono text-xs uppercase tracking-widest">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                <span>CRITICAL MUNICIPAL NOTICE</span>
+            </div>
+
+            <h3 class="font-serif text-2xl text-chalk">Confirm Relational Purge</h3>
+
+            <p class="font-sans text-sm text-chalk/70 leading-relaxed">
+                You are about to initiate voluntary Amortization. This procedure will dispatch a mobile scrubbing unit to your registered domicile in Sector 04 within 72 hours.
+            </p>
+
+            <div class="bg-basalt-900 p-4 border border-basalt-700 font-mono text-xs text-amber-alert/90">
+                WARNING: This process cannot be reversed once neural dampening frequencies commence.
+            </div>
+
+            <div class="flex justify-end space-x-4 pt-2">
+                <button onclick="closePurgeModal()" class="px-5 py-2.5 bg-basalt-700 text-chalk font-mono text-xs uppercase hover:bg-basalt-600 transition-colors">
+                    CANCEL AUDIT
+                </button>
+                <button onclick="executePurge()" class="px-5 py-2.5 bg-amber-alert text-basalt-900 font-mono text-xs font-bold uppercase hover:bg-amber-pulse transition-colors">
+                    CONFIRM DISSOLUTION
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-basalt-800 bg-basalt-900 py-8 px-6 text-center font-mono text-xs text-chalk/40 space-y-2">
+        <p>© 2026 MUNICIPAL BUREAU OF RELATIONAL AMORTIZATION • ALL RIGHTS RESERVED</p>
+        <p class="text-[10px] text-ochre-desert/60">AETHELGARD ARCHIVAL SYSTEM • CARTOGRAPHIC SYSTEM REVISION 18.04</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Narrative Cases Database
+        const cases = {
+            1: {
+                title: "Elias & Mara Vance",
+                status: "ERASED FROM REGISTRY",
+                date: "Audit Completed: Oct 12, 2026",
+                content: `
+                    <div class="space-y-4">
+                        <p class="font-sans text-sm text-chalk/80 leading-relaxed">
+                            <strong class="text-ochre-desert">Summary of Violation:</strong> Subject Elias Vance (Aethelgard Transit Authority) and Mara Vance (Basalt Geothermal Works) maintained an undocumented domestic union exceeding 14 years. Memory audits uncovered over 4,000 megabytes of encrypted correspondence stored in physical analog journals buried beneath Sector 04 infrastructure.
+                        </p>
+                        <div class="bg-basalt-900 p-4 border-l-2 border-amber-alert font-mono text-xs text-chalk/70 space-y-2">
+                            <div>[EXTRACT FROM INTERROGATION LOG #402]</div>
+                            <p class="italic text-chalk/90">"We didn't keep the letters to harm the grid. We kept them because without them, Tuesdays felt like concrete."</p>
+                            <div class="text-[10px] text-ochre-desert">— Elias Vance, during memory dampening prep.</div>
+                        </div>
+                        <p class="font-sans text-sm text-chalk/80 leading-relaxed">
+                            <strong class="text-ochre-desert">Final Resolution:</strong> Total Amortization executed. Subjects relocated to opposing ends of Sector 01 and Sector 09 with zero cross-referential recognition profiles remaining.
+                        </p>
+                    </div>
+                `
+            },
+            2: {
+                title: "Dr. Aris Thorne",
+                status: "IN AMORTIZATION",
+                date: "Audit Pending: Phase 2 Active",
+                content: `
+                    <div class="space-y-4">
+                        <p class="font-sans text-sm text-chalk/80 leading-relaxed">
+                            <strong class="text-ochre-desert">Summary of Violation:</strong> Dr. Thorne served as Chief Technician for the Basalt Memory Wells. Investigation revealed Dr. Thorne deliberately introduced acoustic dampening dead zones in Vault 12, preserving personal audio recordings of his deceased daughter rather than yielding them to civic recycling.
+                        </p>
+                        <div class="bg-basalt-900 p-4 border-l-2 border-teal-glow font-mono text-xs text-chalk/70 space-y-2">
+                            <div>[CHIEF INSPECTOR NOTES]</div>
+                            <p class="italic text-chalk/90">"Subject displays high technical competence, but severe civic corruption due to persistent grief hoarding. Memory dampening at 60% frequency required."</p>
+                        </div>
+                        <p class="font-sans text-sm text-chalk/80 leading-relaxed">
+                            <strong class="text-ochre-desert">Current Disposition:</strong> Subject remains isolated in Sub-Basalt Well 04 under direct supervision of the Bureau.
+                        </p>
+                    </div>
+                `
+            },
+            3: {
+                title: "Subject 0-Zero (Unknown)",
+                status: "UNREGISTERED ENTITY",
+                date: "Discovered: Nov 01, 2025",
+                content: `
+                    <div class="space-y-4">
+                        <p class="font-sans text-sm text-chalk/80 leading-relaxed">
+                            <strong class="text-ochre-desert">Summary of Violation:</strong> Discovered living in the overgrown concrete caldera outside Sector 00. Subject possesses no civic identification, no relational registry history, and displays total immunity to municipal memory dampening frequencies.
+                        </p>
+                        <div class="bg-basalt-900 p-4 border-l-2 border-ochre-desert font-mono text-xs text-chalk/70 space-y-2">
+                            <div>[FIELD AUDITOR MEMORANDUM]</div>
+                            <p class="italic text-chalk/90">"When questioned regarding who they loved, the subject simply pointed at the volcanic moss reclaiming the intake pipes and remained silent."</p>
+                        </div>
+                        <p class="font-sans text-sm text-chalk/80 leading-relaxed">
+                            <strong class="text-ochre-desert">Action Plan:</strong> Perimeter containment established around Caldera Zone. Containment ongoing.
+                        </p>
+                    </div>
+                `
+            }
+        };
+
+        // Character Dossiers Database
+        const characterData = {
+            yara: {
+                name: "Yara Voss",
+                role: "Senior Assessor // Bureau of Relational Balance",
+                image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop",
+                status: "CRITICAL CHOICE PENDING",
+                bio: "Yara Voss has spent eight years enforcing the state’s relational quota systems, convinced that emotional balance preserves public stability. Practical and emotionally guarded, her world unravels when her brother Kian’s dossier appears in the high-deficit purge queue.",
+                progression: "Evolves from a strict, detached bureaucrat into a conflicted operative forced to decide whether human connection is worth civic collapse.",
+                motivation: "Preserving her brother's identity while grappling with growing intimacy toward Nadia Solari.",
+                signature: "Encrypted Assessor Stylus & Sector 00 Override Key",
+                acts: "Central subject of Act II (Reconciliation) and Act IV (Severance).",
+                actTarget: "act-2"
+            },
+            kian: {
+                name: "Kian Voss",
+                role: "Former Logistics Technician // Sector 01",
+                image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop",
+                status: "NEURAL AMORTIZATION IN PROGRESS",
+                bio: "Yara’s brother. Warm, nostalgic, and deeply tied to early childhood memories in the volcanic rift settlements. His refusal to surrender private family journals triggers an automated debt purge.",
+                progression: "Transforms from a vivacious, affectionate brother into a polite, empty shell who recognizes Yara only as a generic civic officer.",
+                motivation: "Holding onto his fading memories of the volcanic caldera before total neural reset.",
+                signature: "Pocket Brass Compass & Hand-carved Basalt Key",
+                acts: "Key focus of Act I (carved mark) and Act II (Amortization order).",
+                actTarget: "act-2"
+            },
+            nadia: {
+                name: "Nadia Solari",
+                role: "Catalog Clerk // Warehouse 88",
+                image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop",
+                status: "UNSANCTIONED INVESTIGATION",
+                bio: "Athletic, alert, and sharp-witted. Nadia works in Warehouse 88 processing artifacts marked for incineration. Beneath her playful demeanor lies a sharp investigative mind.",
+                progression: "Uncovers the link between physical erased items and the subterranean power grid, leading the descent into Sub-Basalt Well 00.",
+                motivation: "Exposing the Bureau's lies and protecting those trapped in the registry.",
+                signature: "Industrial Inspection Lantern & Modified Optical Scanner",
+                acts: "Featured in Act I (Warehouse 88), Act III (Convergence), and Act IV.",
+                actTarget: "act-1"
+            },
+            teo: {
+                name: "Teo Rios",
+                role: "Gantry Specialist // Sector 04 Logistics",
+                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop",
+                status: "ACTIVE MAINTENANCE PATROL",
+                bio: "A weathered, quiet man whose life was emptied by an earlier amortization cycle. Teo works on stone gantries in Sector 04, silently observing as physical carvings dissolve under state dampening.",
+                progression: "Transitions from quiet grief to active resistance as he connects with Nadia and Priya to find the physical memory wells.",
+                motivation: "Proving that what was erased once truly existed.",
+                signature: "Tungsten Chisel & Frequency Resonance Tracer",
+                acts: "Central to Act I (Frontier Erosion) and Act III (Sub-Basalt Wells).",
+                actTarget: "act-1"
+            },
+            priya: {
+                name: "Priya Nair",
+                role: "Perimeter Operator // Fence Line 12",
+                image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=800&auto=format&fit=crop",
+                status: "ANOMALY REPORTED",
+                bio: "Calm, observant, and cautious. Priya patrols the boundary where concrete meets wild volcanic jungle. She is the first to notice that physical jungle paths exist where civic radar maps indicate unbroken wall.",
+                progression: "Recognizes that the state is re-writing physical terrain to mask historical sites.",
+                motivation: "Navigating between military protocol and undeniable truth.",
+                signature: "Thermal Patrol HUD & Field Mapping Compass",
+                acts: "Key subject of Act I (Jungle path discovery) and Act III.",
+                actTarget: "act-1"
+            }
+        };
+
+        // WORLD ATLAS DATABASE (8 Municipal Maps with SVGs & Markers)
+        const atlasMapData = {
+            1: {
+                code: "MAP REF: AETH-01-FULL",
+                title: "1. Full Island Cartography — Aethelgard",
+                coords: "34°12'N 118°04'W",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Teardrop Island Outline -->
+                        <path d="M 400,60 C 550,140 680,260 620,400 C 580,480 220,480 180,400 C 120,260 250,140 400,60 Z" fill="#132326" stroke="#2c4a4e" stroke-width="2.5" />
+                        <!-- Volcanic Ridge Contours -->
+                        <path d="M 380,120 C 450,180 500,260 480,350 C 440,400 360,400 320,350 C 300,260 350,180 380,120 Z" fill="none" stroke="#283037" stroke-width="1.5" stroke-dasharray="4 3" />
+                        <!-- Central Jungle -->
+                        <path d="M 390,160 C 430,210 460,280 430,340 C 390,370 370,370 350,340 C 330,280 360,210 390,160 Z" fill="#2c4a4e" opacity="0.3" />
+                        
+                        <!-- Waterfalls & Reservoirs -->
+                        <path d="M 370,180 L 330,240 L 300,290" stroke="#3d6b70" stroke-width="2" fill="none"/>
+                        <path d="M 410,180 L 450,250 L 480,310" stroke="#3d6b70" stroke-width="2" fill="none"/>
+                        <circle cx="300" cy="290" r="12" fill="#132326" stroke="#3d6b70" stroke-width="1.5" />
+                        <circle cx="480" cy="310" r="14" fill="#132326" stroke="#3d6b70" stroke-width="1.5" />
+
+                        <!-- Development Zones Overlays -->
+                        <!-- Zone 1 Coastal -->
+                        <path d="M 200,380 C 240,320 280,360 310,420 C 260,450 210,430 200,380 Z" fill="#c2925b" opacity="0.25" stroke="#c2925b" stroke-width="1" />
+                        <text x="220" y="405" fill="#dfb27e" font-family="monospace" font-size="10" font-weight="bold">ZONE 1</text>
+                        
+                        <!-- Zone 2 Mid-Spire -->
+                        <path d="M 320,410 C 350,350 430,350 460,410 C 410,460 360,460 320,410 Z" fill="#3d6b70" opacity="0.25" stroke="#3d6b70" stroke-width="1" />
+                        <text x="375" y="420" fill="#e6e8e6" font-family="monospace" font-size="10" font-weight="bold">ZONE 2</text>
+
+                        <!-- Zone 3 New District -->
+                        <path d="M 470,390 C 510,330 580,370 600,410 C 560,460 500,450 470,390 Z" fill="#d97706" opacity="0.2" stroke="#d97706" stroke-width="1" />
+                        <text x="520" y="415" fill="#f59e0b" font-family="monospace" font-size="10" font-weight="bold">ZONE 3</text>
+
+                        <!-- Interactive Markers -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Basalt Perimeter Sector 04', 'ZONE 1 / SECTOR 04', 'Teo Rios maintenance gantry where physical carved markings are actively eroding from stone columns.', '1')">
+                            <circle cx="250" cy="390" r="7" fill="#d97706" />
+                            <circle cx="250" cy="390" r="14" fill="none" stroke="#d97706" class="map-pulse" />
+                        </g>
+                        <g class="map-marker" onclick="inspectAtlasMarker('Warehouse 88 Logistics Hub', 'ZONE 2 / WAREHOUSE 88', 'Nadia Solari catalog station where unindexed personal sketchbooks were discovered prior to incineration.', '2')">
+                            <circle cx="390" cy="390" r="7" fill="#3d6b70" />
+                        </g>
+                        <g class="map-marker" onclick="inspectAtlasMarker('Subgrade Memory Vault 00 Entrance', 'ZONE 3 / SUB-BASALT', 'Direct subterranean access point leading down into the nitrogen-cooled memory tile silos.', '3')">
+                            <circle cx="530" cy="400" r="7" fill="#f59e0b" />
+                        </g>
+                    </svg>
+                `
+            },
+            2: {
+                code: "MAP REF: AETH-02-Z1",
+                title: "2. Zone 1 — Original Settlement (Coastal)",
+                coords: "34°11'N 118°06'W",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Coastline Water Boundary -->
+                        <path d="M 0,350 C 200,320 400,380 800,300 L 800,500 L 0,500 Z" fill="#132326" stroke="#2c4a4e" stroke-width="2" />
+                        
+                        <!-- Organic Old Street Grid Lines -->
+                        <path d="M 100,50 C 150,150 120,280 200,340" stroke="#283037" stroke-width="2" fill="none"/>
+                        <path d="M 250,40 C 220,180 300,250 350,330" stroke="#283037" stroke-width="2" fill="none"/>
+                        <path d="M 50,200 C 200,180 400,220 600,200" stroke="#283037" stroke-width="2" fill="none"/>
+                        <path d="M 120,280 C 300,270 450,310 700,280" stroke="#283037" stroke-width="2" stroke-dasharray="3 3" fill="none"/>
+
+                        <!-- Old Reservoir Intake System -->
+                        <rect x="420" y="80" width="120" height="80" rx="4" fill="#121619" stroke="#3d6b70" stroke-width="1.5" />
+                        <text x="435" y="125" fill="#3d6b70" font-family="monospace" font-size="11">OLD INTAKE #01</text>
+
+                        <!-- Basalt Column Gantries -->
+                        <circle cx="200" cy="340" r="18" fill="#1b2024" stroke="#c2925b" stroke-width="2" />
+                        <text x="175" y="375" fill="#c2925b" font-family="monospace" font-size="10">COLUMN 14</text>
+
+                        <!-- Interactive Markers -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Column 14 Carved Initial Notch', 'ZONE 1 / GANTRY 14', 'The location where Teo and Kian gouged initials into tungsten stone. System scans declare zero surface loss, yet depth shrinks weekly.', '1')">
+                            <circle cx="200" cy="340" r="6" fill="#c2925b" />
+                            <circle cx="200" cy="340" r="12" fill="none" stroke="#c2925b" class="map-pulse" />
+                        </g>
+                    </svg>
+                `
+            },
+            3: {
+                code: "MAP REF: AETH-03-Z2",
+                title: "3. Zone 2 — The Spire & Substation District",
+                coords: "34°12'N 118°04'W",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Wide Boulevards Grid -->
+                        <line x1="100" y1="100" x2="700" y2="100" stroke="#283037" stroke-width="4"/>
+                        <line x1="100" y1="250" x2="700" y2="250" stroke="#283037" stroke-width="4"/>
+                        <line x1="100" y1="400" x2="700" y2="400" stroke="#283037" stroke-width="4"/>
+
+                        <line x1="200" y1="50" x2="200" y2="450" stroke="#283037" stroke-width="4"/>
+                        <line x1="400" y1="50" x2="400" y2="450" stroke="#283037" stroke-width="4"/>
+                        <line x1="600" y1="50" x2="600" y2="450" stroke="#283037" stroke-width="4"/>
+
+                        <!-- Unfinished Construction Plots -->
+                        <rect x="230" y="130" width="130" height="90" fill="#121619" stroke="#8a653a" stroke-dasharray="4 2" />
+                        <text x="245" y="180" fill="#8a653a" font-family="monospace" font-size="10">UNFINISHED PLOT 4B</text>
+
+                        <!-- Nadia's Rooftop Substation / Warehouse 88 -->
+                        <rect x="430" y="280" width="140" height="100" fill="#1b2024" stroke="#3d6b70" stroke-width="2" />
+                        <text x="450" y="335" fill="#3d6b70" font-family="monospace" font-size="11" font-weight="bold">WAREHOUSE 88</text>
+
+                        <!-- Interactive Marker -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Warehouse 88 Catalog Terminal', 'ZONE 2 / SECTOR 04', 'Nadia Solari’s inspection node where scrubbed domestic sketchbooks revealed unmapped civic anomalies.', '1')">
+                            <circle cx="500" cy="330" r="7" fill="#3d6b70" />
+                            <circle cx="500" cy="330" r="14" fill="none" stroke="#3d6b70" class="map-pulse" />
+                        </g>
+                    </svg>
+                `
+            },
+            4: {
+                code: "MAP REF: AETH-04-Z3",
+                title: "4. Zone 3 — New District & Bureau Core",
+                coords: "34°13'N 118°02'W",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Hyper-rigid City Grid -->
+                        <g stroke="#283037" stroke-width="1.5">
+                            <line x1="50" y1="100" x2="750" y2="100"/>
+                            <line x1="50" y1="200" x2="750" y2="200"/>
+                            <line x1="50" y1="300" x2="750" y2="300"/>
+                            <line x1="50" y1="400" x2="750" y2="400"/>
+
+                            <line x1="150" y1="50" x2="150" y2="450"/>
+                            <line x1="300" y1="50" x2="300" y2="450"/>
+                            <line x1="450" y1="50" x2="450" y2="450"/>
+                            <line x1="600" y1="50" x2="600" y2="450"/>
+                        </g>
+
+                        <!-- Bureau of Relational Balance Monolith -->
+                        <rect x="330" y="130" width="240" height="140" fill="#121619" stroke="#d97706" stroke-width="2.5" />
+                        <text x="350" y="180" fill="#dfb27e" font-family="serif" font-size="12" font-weight="bold">BUREAU OF RELATIONAL BALANCE</text>
+                        <text x="380" y="210" fill="#8a653a" font-family="monospace" font-size="10">SECTOR 00 CONTROL CORE</text>
+
+                        <!-- Subgrade Conduit Shaft -->
+                        <circle cx="450" cy="230" r="10" fill="#0a0c0e" stroke="#f59e0b" stroke-dasharray="2 2" />
+
+                        <!-- Interactive Marker -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Yara Voss Assessor Terminal', 'SECTOR 00 / BUREAU CORE', 'High-security terminal where Yara Voss manages real-time relational deficit indices and Kian’s dissolution countdown.', '2')">
+                            <circle cx="450" cy="180" r="7" fill="#d97706" />
+                            <circle cx="450" cy="180" r="14" fill="none" stroke="#d97706" class="map-pulse" />
+                        </g>
+                    </svg>
+                `
+            },
+            5: {
+                code: "MAP REF: AETH-05-JNG",
+                title: "5. Jungle & Reservoir System Topography",
+                coords: "34°15'N 118°05'W",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Topographic Hill Contours -->
+                        <path d="M 100,400 C 200,200 600,200 700,400" stroke="#2c4a4e" stroke-width="2" fill="none" />
+                        <path d="M 150,380 C 250,230 550,230 650,380" stroke="#2c4a4e" stroke-width="1.5" stroke-dasharray="4 2" fill="none" />
+                        <path d="M 200,360 C 300,260 500,260 600,360" stroke="#2c4a4e" stroke-width="1" fill="none" />
+
+                        <!-- Water Intake Tunnels -->
+                        <path d="M 400,200 L 400,380" stroke="#3d6b70" stroke-width="4" stroke-dasharray="6 3"/>
+                        <circle cx="400" cy="380" r="20" fill="#132326" stroke="#3d6b70" stroke-width="2" />
+                        <text x="350" y="420" fill="#3d6b70" font-family="monospace" font-size="10">RESERVOIR VAULT #02</text>
+
+                        <!-- Perimeter Fence Line 12 -->
+                        <line x1="120" y1="350" x2="680" y2="350" stroke="#b45309" stroke-width="1.5" stroke-dasharray="8 4" />
+                        <text x="130" y="340" fill="#b45309" font-family="monospace" font-size="10">PATROL FENCE LINE 12</text>
+
+                        <!-- Unmapped Jungle Path -->
+                        <path d="M 480,350 C 520,380 500,440 550,480" stroke="#f59e0b" stroke-width="2" stroke-dasharray="2 2" fill="none"/>
+
+                        <!-- Interactive Marker -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Unmapped Jungle Path (Priya Patrol)', 'PERIMETER 12 / JUNGLE', 'Physical foot path through banyan roots clearly visible to naked eye, yet absent from municipal LIDAR scanner maps.', '1')">
+                            <circle cx="500" cy="380" r="7" fill="#f59e0b" />
+                            <circle cx="500" cy="380" r="14" fill="none" stroke="#f59e0b" class="map-pulse" />
+                        </g>
+                    </svg>
+                `
+            },
+            6: {
+                code: "MAP REF: AETH-06-UND",
+                title: "6. Undercity Machinery Cross-Section",
+                coords: "34°13'N 118°02'W [SUBGRADE -120M]",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Surface City Ground Line -->
+                        <line x1="50" y1="100" x2="750" y2="100" stroke="#e6e8e6" stroke-width="3"/>
+                        <text x="60" y="90" fill="#e6e8e6" font-family="sans-serif" font-size="11" font-weight="bold">SURFACE CITY LEVEL (ZONE 3)</text>
+
+                        <!-- Geological Basalt Strata Layer -->
+                        <rect x="50" y="103" width="700" height="120" fill="#1b2024" opacity="0.8" />
+                        <text x="60" y="140" fill="#8a653a" font-family="monospace" font-size="11">SOLID BASALT BEDROCK LAYER (-40M)</text>
+
+                        <!-- Deep Subgrade Nitrogen Vault Chamber -->
+                        <rect x="150" y="240" width="500" height="200" fill="#0a0c0e" stroke="#3d6b70" stroke-width="2.5" />
+                        <text x="170" y="270" fill="#3d6b70" font-family="monospace" font-size="12" font-weight="bold">SUB-SILT SUBGRADE CHAMBER 00 (-120M)</text>
+
+                        <!-- Memory Silo Racks -->
+                        <rect x="200" y="300" width="60" height="110" fill="#132326" stroke="#2c4a4e" />
+                        <rect x="300" y="300" width="60" height="110" fill="#132326" stroke="#2c4a4e" />
+                        <rect x="400" y="300" width="60" height="110" fill="#132326" stroke="#2c4a4e" />
+                        <rect x="500" y="300" width="60" height="110" fill="#132326" stroke="#2c4a4e" />
+
+                        <!-- Liquid Nitrogen Coolant Pipes -->
+                        <path d="M 100,100 L 100,350 L 150,350" stroke="#3d6b70" stroke-width="3" fill="none" />
+
+                        <!-- Interactive Marker -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Subgrade Memory Silos', 'CHAMBER 00 / SUB-SILT', '4,000 TB magnetic tile arrays revolving in nitrogen wells, harvesting erased relational energy into the city power grid.', '3')">
+                            <circle cx="330" cy="350" r="8" fill="#3d6b70" />
+                            <circle cx="330" cy="350" r="16" fill="none" stroke="#3d6b70" class="map-pulse" />
+                        </g>
+                    </svg>
+                `
+            },
+            7: {
+                code: "MAP REF: AETH-07-TRN",
+                title: "7. Transit & Access Network Schematic",
+                coords: "34°12'N 118°04'W",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Surface Monorail Line -->
+                        <path d="M 100,150 C 300,100 500,200 700,150" stroke="#c2925b" stroke-width="3" fill="none"/>
+                        <text x="110" y="140" fill="#c2925b" font-family="monospace" font-size="10">SURFACE MONORAIL LINE A</text>
+
+                        <!-- Jungle Service Road -->
+                        <path d="M 150,350 C 350,400 550,300 750,350" stroke="#283037" stroke-width="3" stroke-dasharray="6 3" fill="none"/>
+
+                        <!-- Restricted Underground Tube Access -->
+                        <path d="M 200,250 C 400,250 500,250 650,250" stroke="#b45309" stroke-width="2.5" stroke-dasharray="2 2" fill="none"/>
+                        <text x="210" y="240" fill="#b45309" font-family="monospace" font-size="10">RESTRICTED TUBE 00 (UNMAPPED)</text>
+
+                        <!-- Interactive Marker -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Restricted Transit Node', 'SUB-TRANSIT / LINE 00', 'Maintenance access tube connecting Sector 04 Logistics with the Zone 3 central power grid undercity.', '3')">
+                            <circle cx="420" cy="250" r="7" fill="#b45309" />
+                            <circle cx="420" cy="250" r="14" fill="none" stroke="#b45309" class="map-pulse" />
+                        </g>
+                    </svg>
+                `
+            },
+            8: {
+                code: "MAP REF: AETH-08-EMG",
+                title: "8. Emergency Anomaly & Evacuation Diagram",
+                coords: "34°13'N 118°02'W [ANOMALY DETECTED]",
+                svg: `
+                    <svg viewBox="0 0 800 500" class="w-full h-full max-h-[480px]">
+                        <!-- Clinical Emergency Blueprint Grid -->
+                        <rect x="100" y="80" width="600" height="340" fill="#121619" stroke="#b45309" stroke-width="2" />
+                        
+                        <!-- Impossible Loops / Anomaly Route Lines -->
+                        <path d="M 150,150 L 350,150 L 350,300 L 200,300 L 200,200 L 350,200" stroke="#f59e0b" stroke-width="2" fill="none"/>
+                        <text x="160" y="140" fill="#f59e0b" font-family="monospace" font-size="10">IMPOSSIBLE CORRIDOR LOOP A</text>
+
+                        <path d="M 450,150 L 650,150 L 650,350 L 450,350 Z" stroke="#d97706" stroke-width="2" stroke-dasharray="4 2" fill="none"/>
+
+                        <!-- Central Machinery Vault -->
+                        <circle cx="400" cy="250" r="30" fill="#1b2024" stroke="#d97706" stroke-width="2" />
+                        <text x="365" y="255" fill="#d97706" font-family="monospace" font-size="10" font-weight="bold">CORE OVERLOAD</text>
+
+                        <!-- Interactive Marker -->
+                        <g class="map-marker" onclick="inspectAtlasMarker('Core Overload Override Switch', 'ZONE 3 / BUREAU VAULT', 'Yara Voss critical choice terminal in Act IV. Initiating overload releases all stored memory tiles into the city grid.', '4')">
+                            <circle cx="400" cy="250" r="8" fill="#f59e0b" />
+                            <circle cx="400" cy="250" r="16" fill="none" stroke="#f59e0b" class="map-pulse" />
+                        </g>
+                    </svg>
+                `
+            }
+        };
+
+        // Navigation Switching Engine
+        function showSection(sectionId) {
+            const sections = ['hero', 'story', 'characters', 'atlas', 'dossier', 'calculator', 'codex'];
+            sections.forEach(s => {
+                const el = document.getElementById(`section-${s}`);
+                if (el) el.classList.add('hidden');
+                const navBtn = document.getElementById(`nav-${s}`);
+                if (navBtn) navBtn.classList.remove('text-ochre-desert', 'border-b-2', 'border-ochre-desert');
+            });
+
+            const targetSection = document.getElementById(`section-${sectionId}`);
+            if (targetSection) targetSection.classList.remove('hidden');
+            
+            const activeNav = document.getElementById(`nav-${sectionId}`);
+            if (activeNav) activeNav.classList.add('text-ochre-desert', 'border-b-2', 'border-ochre-desert');
+
+            if (sectionId === 'dossier') {
+                loadCase(1);
+            } else if (sectionId === 'atlas') {
+                renderAtlasNav();
+                loadAtlasMap(1);
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Atlas Map Selector Nav
+        function renderAtlasNav() {
+            const container = document.getElementById('map-nav-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            for (let id = 1; id <= 8; id++) {
+                const m = atlasMapData[id];
+                const btn = document.createElement('button');
+                btn.id = `atlas-map-btn-${id}`;
+                btn.className = `w-full text-left px-3 py-2 rounded transition-all flex items-center justify-between ${id === 1 ? 'bg-ochre-desert/20 border border-ochre-desert text-ochre-desert font-bold' : 'bg-basalt-900/60 border border-basalt-700 text-chalk/70 hover:text-ochre-desert hover:border-basalt-600'}`;
+                btn.onclick = () => loadAtlasMap(id);
+                btn.innerHTML = `
+                    <span class="truncate pr-2">${m.title}</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 shrink-0 opacity-50"></i>
+                `;
+                container.appendChild(btn);
+            }
+            lucide.createIcons();
+        }
+
+        // Load Specific Map into Viewport
+        function loadAtlasMap(id) {
+            const m = atlasMapData[id];
+            if (!m) return;
+
+            // Highlight nav button
+            for (let i = 1; i <= 8; i++) {
+                const b = document.getElementById(`atlas-map-btn-${i}`);
+                if (b) {
+                    b.className = `w-full text-left px-3 py-2 rounded transition-all flex items-center justify-between ${i === id ? 'bg-ochre-desert/20 border border-ochre-desert text-ochre-desert font-bold' : 'bg-basalt-900/60 border border-basalt-700 text-chalk/70 hover:text-ochre-desert hover:border-basalt-600'}`;
+                }
+            }
+
+            // Update Header Display
+            document.getElementById('map-code-display').innerText = m.code;
+            document.getElementById('map-title-display').innerText = m.title;
+            document.getElementById('map-coords').innerText = m.coords;
+
+            // Load SVG content
+            document.getElementById('svg-map-viewport').innerHTML = m.svg;
+
+            // Reset Inspector
+            document.getElementById('inspector-name').innerText = "CLICK A MAP MARKER TO AUDIT LOCATION";
+            document.getElementById('inspector-sector').innerText = "CIVIC SECTOR: UNBOUND";
+            document.getElementById('inspector-desc').innerText = "Select any yellow or teal beacon on the municipal blueprint to reveal classified civil planning notes, environmental anomalies, or narrative links.";
+
+            lucide.createIcons();
+        }
+
+        // Inspect Specific Marker
+        function inspectAtlasMarker(name, sector, desc, actLink) {
+            document.getElementById('inspector-name').innerText = name;
+            document.getElementById('inspector-sector').innerText = `SECTOR: ${sector}`;
+            document.getElementById('inspector-desc').innerHTML = `
+                ${desc}
+                <br/><button onclick="showSection('story'); scrollToAct('act-${actLink}');" class="mt-2 inline-flex items-center space-x-1 text-ochre-desert hover:underline font-mono text-[11px]">
+                    <span>GOTO STORY ARCHIVE ACT ${actLink}</span>
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </button>
+            `;
+            lucide.createIcons();
+        }
+
+        // Layer Toggle (Surface vs. Undercity)
+        function toggleMapLayer(layer) {
+            const btnSurface = document.getElementById('btn-layer-surface');
+            const btnUnder = document.getElementById('btn-layer-undercity');
+
+            if (layer === 'surface') {
+                btnSurface.className = "px-2.5 py-1 rounded bg-ochre-desert text-basalt-900 font-bold uppercase transition-all";
+                btnUnder.className = "px-2.5 py-1 rounded bg-basalt-700 text-chalk hover:text-ochre-desert uppercase transition-all";
+                loadAtlasMap(1);
+            } else {
+                btnUnder.className = "px-2.5 py-1 rounded bg-ochre-desert text-basalt-900 font-bold uppercase transition-all";
+                btnSurface.className = "px-2.5 py-1 rounded bg-basalt-700 text-chalk hover:text-ochre-desert uppercase transition-all";
+                loadAtlasMap(6);
+            }
+        }
+
+        function resetMapZoom() {
+            const viewport = document.getElementById('svg-map-viewport');
+            viewport.style.transform = "scale(1)";
+        }
+
+        // Character Modal Functions
+        function openCharacterModal(charKey) {
+            const data = characterData[charKey];
+            if (!data) return;
+
+            const modalContent = document.getElementById('character-modal-content');
+            modalContent.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-6 items-start border-b border-basalt-700 pb-6">
+                    <img src="${data.image}" alt="${data.name}" class="w-full md:w-48 h-64 object-cover rounded-sm border border-basalt-600">
+                    <div class="space-y-3 flex-grow">
+                        <span class="font-mono text-xs text-ochre-desert uppercase tracking-widest">${data.role}</span>
+                        <h3 class="font-serif text-3xl text-chalk">${data.name}</h3>
+                        <div class="inline-block px-2 py-1 bg-amber-alert/10 border border-amber-alert/30 font-mono text-xs text-amber-alert">
+                            ${data.status}
+                        </div>
+                        <p class="font-sans text-xs sm:text-sm text-chalk/80 leading-relaxed pt-2">
+                            ${data.bio}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
+                    <div class="bg-basalt-900 p-4 border border-basalt-700 space-y-1">
+                        <span class="text-ochre-desert">EMOTIONAL &amp; NARRATIVE ARC:</span>
+                        <p class="text-chalk/70 font-sans text-xs mt-1 leading-relaxed">${data.progression}</p>
+                    </div>
+                    <div class="bg-basalt-900 p-4 border border-basalt-700 space-y-1">
+                        <span class="text-teal-glow">CORE MOTIVATION:</span>
+                        <p class="text-chalk/70 font-sans text-xs mt-1 leading-relaxed">${data.motivation}</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-basalt-700 pt-4 font-mono text-xs">
+                    <div class="text-chalk/60">
+                        <span>SIGNATURE ITEM:</span> <span class="text-chalk font-semibold">${data.signature}</span>
+                    </div>
+                    <button onclick="closeCharacterModal(); showSection('story'); scrollToAct('${data.actTarget}');" class="px-4 py-2 bg-ochre-desert text-basalt-900 font-bold hover:bg-ochre-light transition-all uppercase tracking-wider">
+                        READ IN STORY ARCHIVE →
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('character-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeCharacterModal() {
+            document.getElementById('character-modal').classList.add('hidden');
+        }
+
+        // Scroll to specific Act in Story Archive
+        function scrollToAct(actId) {
+            const actElement = document.getElementById(actId);
+            if (actElement) {
+                actElement.scrollIntoView({ behavior: 'smooth' });
+                updateActProgress(actId);
+            }
+        }
+
+        function updateActProgress(activeActId) {
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`act-btn-${i}`);
+                if (btn) {
+                    if (`act-${i}` === activeActId) {
+                        btn.className = "px-2.5 py-1 rounded bg-basalt-700 text-ochre-desert font-bold transition-colors";
+                    } else {
+                        btn.className = "px-2.5 py-1 rounded bg-basalt-800 text-chalk/60 hover:text-ochre-desert transition-colors";
+                    }
+                }
+            }
+        }
+
+        // Observer for scroll progress in Story Archive
+        window.addEventListener('scroll', () => {
+            const storySection = document.getElementById('section-story');
+            if (storySection && !storySection.classList.contains('hidden')) {
+                const acts = ['act-1', 'act-2', 'act-3', 'act-4'];
+                for (let actId of acts) {
+                    const el = document.getElementById(actId);
+                    if (el) {
+                        const rect = el.getBoundingClientRect();
+                        if (rect.top <= 200 && rect.bottom >= 200) {
+                            updateActProgress(actId);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
+        // Toggle Mobile Menu
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+
+        // Load Case Details into Dossier
+        function loadCase(id) {
+            const caseData = cases[id];
+            if (!caseData) return;
+
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`case-btn-${i}`);
+                if (btn) {
+                    btn.classList.remove('bg-basalt-800', 'border-ochre-desert/80');
+                    btn.classList.add('bg-basalt-800/40', 'border-basalt-700');
+                }
+            }
+            const selectedBtn = document.getElementById(`case-btn-${id}`);
+            if (selectedBtn) {
+                selectedBtn.classList.remove('bg-basalt-800/40', 'border-basalt-700');
+                selectedBtn.classList.add('bg-basalt-800', 'border-ochre-desert/80');
+            }
+
+            const container = document.getElementById('case-detail-content');
+            container.innerHTML = `
+                <div class="border-b border-basalt-700 pb-4">
+                    <div class="flex justify-between items-center font-mono text-xs text-ochre-desert">
+                        <span>${caseData.date}</span>
+                        <span class="px-2 py-0.5 bg-amber-alert/10 text-amber-alert border border-amber-alert/30">${caseData.status}</span>
+                    </div>
+                    <h3 class="font-serif text-2xl sm:text-3xl text-chalk mt-2">${caseData.title}</h3>
+                </div>
+                ${caseData.content}
+            `;
+        }
+
+        // Relational Debt Calculator
+        function calculateDebt() {
+            const years = parseInt(document.getElementById('slider-years').value);
+            const artifacts = parseInt(document.getElementById('slider-artifacts').value);
+            const intensity = parseInt(document.getElementById('slider-intensity').value);
+            const unspoken = document.getElementById('chk-unspoken').checked;
+            const cohabitation = document.getElementById('chk-cohabitation').checked;
+
+            document.getElementById('val-years').innerText = `${years} Years`;
+            document.getElementById('val-artifacts').innerText = `${artifacts} Items`;
+            document.getElementById('val-intensity').innerText = `${intensity}%`;
+
+            let baseScore = (years * 1200) + (artifacts * 350) + (intensity * 250);
+            if (unspoken) baseScore *= 1.15;
+            if (cohabitation) baseScore *= 1.25;
+
+            const finalScore = Math.round(baseScore);
+            document.getElementById('debt-score').innerText = `${finalScore.toLocaleString()} CR`;
+
+            const statusEl = document.getElementById('debt-status');
+            const riskEl = document.getElementById('debt-risk');
+            const periodEl = document.getElementById('debt-period');
+            const actionEl = document.getElementById('debt-action');
+
+            if (finalScore < 15000) {
+                statusEl.innerHTML = `STATUS: <span class="text-teal-glow font-bold">ACCEPTABLE MARGIN</span>`;
+                riskEl.innerText = "LOW";
+                riskEl.className = "text-teal-glow";
+                periodEl.innerText = "36 Months";
+                actionEl.innerText = "ROUTINE AUDIT";
+            } else if (finalScore < 35000) {
+                statusEl.innerHTML = `STATUS: <span class="text-amber-alert font-bold">MODERATE IMPAIRMENT</span>`;
+                riskEl.innerText = "ELEVATED";
+                riskEl.className = "text-amber-alert";
+                periodEl.innerText = "18 Months";
+                actionEl.innerText = "MANDATORY SEPARATION";
+            } else {
+                statusEl.innerHTML = `STATUS: <span class="text-red-500 font-bold">CRITICAL DEFICIT</span>`;
+                riskEl.innerText = "EXTREME";
+                riskEl.className = "text-red-500";
+                periodEl.innerText = "IMMEDIATE (72 HRS)";
+                actionEl.innerText = "TOTAL AMORTIZATION";
+            }
+        }
+
+        // Modal Functions
+        function triggerPurgeModal() {
+            document.getElementById('purge-modal').classList.remove('hidden');
+        }
+
+        function closePurgeModal() {
+            document.getElementById('purge-modal').classList.add('hidden');
+        }
+
+        function executePurge() {
+            alert("MUNICIPAL REQUEST REGISTERED. Scrubbing unit dispatched to your location.");
+            closePurgeModal();
+        }
+
+        // Initialize Calculator
+        calculateDebt();
+    </script>
+</body>
+</html>
